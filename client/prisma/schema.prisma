@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model User {
+  id       BigInt      @id
+  password String?     @db.VarChar(255)
+  role     users_role?
+  username String?     @unique(map: "UK_r43af9ap4edm43mmtq01oddj6") @db.VarChar(32)
+
+  @@map("users")
+}
+
+model Comic {
+  id                  BigInt      @id
+  description         String?     @db.VarChar(255)
+  grade               Int?
+  issue_number        String?     @db.VarChar(10)
+  publication_date    String?     @db.VarChar(20)
+  publisher           String?     @db.VarChar(40)
+  series_title        String?     @db.VarChar(255)
+  slabbed             Boolean?    @db.Bit(1)
+  story_title         String?     @db.VarChar(255)
+  value               Float?
+  volume_number       String?     @db.VarChar(40)
+  user_id             BigInt?
+  creators            Creator[]
+  principleCharacters Character[]
+
+  @@unique([publisher, series_title, volume_number, issue_number, publication_date, user_id], map: "UniquePublisherSeriesTitleVolumeNumberIssueNumberPublicationDate")
+  @@map("comics")
+}
+
+model Creator {
+  id     BigInt  @id
+  name   String? @unique(map: "UK_hojjolhfbm9gth0c5l1qng9fy") @db.VarChar(255)
+  comics Comic[]
+
+  @@map("creators")
+}
+
+model Character {
+  id     BigInt  @id
+  name   String? @unique(map: "UK_r3m7dafrtn7gkievcf8fw7nt5") @db.VarChar(255)
+  comics Comic[]
+
+  @@map("characters")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model characters_seq {
+  next_val BigInt?
+
+  @@ignore
+}
+
+model comic_characters {
+  comic_id     BigInt
+  character_id BigInt
+
+  @@id([comic_id, character_id])
+}
+
+model comic_creators {
+  comic_id   BigInt
+  creator_id BigInt
+
+  @@id([comic_id, creator_id])
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model comics_seq {
+  next_val BigInt?
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model creators_seq {
+  next_val BigInt?
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model users_seq {
+  next_val BigInt?
+
+  @@ignore
+}
+
+enum users_role {
+  ADMIN
+  USER
+}
